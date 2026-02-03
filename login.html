@@ -6,6 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Page</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            if (savedTheme === 'dark') {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+
     <style>
         :root {
             --bg-main: #f5f5f8;
@@ -18,7 +28,8 @@
             --input-bg: #f8f9fa;
         }
 
-        body.dark {
+        /* تعديل الاستهداف ليكون من خلال كلاس الـ dark على html */
+        .dark {
             --bg-main: #141b2b;
             --bg-card: #0e172a;
             --text-main: #F8FAFC;
@@ -66,9 +77,7 @@
             z-index: 10;
         }
 
-        html[dir="rtl"] .controls-top {
-            flex-direction: row-reverse;
-        }
+        html[dir="rtl"] .controls-top { flex-direction: row-reverse; }
 
         .lang-toggle {
             display: inline-flex;
@@ -79,10 +88,8 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
         
-        body:not(.dark) .lang-toggle {
-            background: var(--primary-soft);
-            border: none;
-        }
+        html:not(.dark) .lang-toggle { background: var(--primary-soft); border: none; }
+        .dark .lang-toggle { background: rgba(255, 255, 255, 0.15); }
 
         .lang-toggle button {
             border: none;
@@ -91,31 +98,31 @@
             border-radius: 999px;
             cursor: pointer;
             font-size: 0.75rem;
-            color: white;
+            color: var(--text-soft);
             font-weight: 700;
         }
 
-        body:not(.dark) .lang-toggle button { color: var(--text-soft); }
-        .lang-toggle button.active { background: var(--primary); color: white; }
+        .dark .lang-toggle button { color: white; }
+        .lang-toggle button.active { background: var(--primary); color: white !important; }
 
         .dark-toggle {
-            background: rgba(255, 255, 255, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: var(--primary-soft);
+            border: none;
             width: 40px;
             height: 40px;
             border-radius: 50%;
             cursor: pointer;
-            color: white;
+            color: var(--primary);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 1.1rem;
         }
 
-        body:not(.dark) .dark-toggle {
-            background: var(--primary-soft);
-            color: var(--primary);
-            border: none;
+        .dark .dark-toggle {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
         }
 
         .side-info {
@@ -243,7 +250,7 @@
         </div>
     </div>
 
-    <script>
+<script>
     const translations = {
         en: {
             sideTitle: "Master your day, one task at a time.",
@@ -288,7 +295,6 @@
         document.getElementById('btnLogin').textContent = translations[lang].btnLogin;
         document.getElementById('email').placeholder = translations[lang].placeholderEmail;
 
-        
         const footer = document.getElementById('footerText');
         footer.innerHTML = translations[lang].footerText + `<a href="signup.html" id="signupLink">${translations[lang].signupLink}</a>`;
 
@@ -300,33 +306,31 @@
 
     const modeBtn = document.getElementById('modeBtn');
     
-    
     window.addEventListener('DOMContentLoaded', () => {
-        // الثيم
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'dark') {
-            document.body.classList.add('dark');
+        // تحديث أيقونة الزر بناءً على الثيم اللي اتطبق في الـ head
+        const isDark = document.documentElement.classList.contains('dark');
+        if (isDark) {
             modeBtn.querySelector('i').classList.replace('fa-moon', 'fa-sun');
         }
     
-        // اللغة
+        // تطبيق اللغة
         const savedLang = localStorage.getItem('lang') || 'en';
         changeLang(savedLang);
     });
 
     modeBtn.addEventListener('click', () => {
-        document.body.classList.toggle('dark');
+        const html = document.documentElement;
+        html.classList.toggle('dark');
+        
         const icon = modeBtn.querySelector('i');
-        const isDark = document.body.classList.contains('dark');
+        const isDark = html.classList.contains('dark');
+        
         icon.classList.replace(isDark ? 'fa-moon' : 'fa-sun', isDark ? 'fa-sun' : 'fa-moon');
         localStorage.setItem('theme', isDark ? 'dark' : 'light');
     });
 
     document.getElementById('loginForm').addEventListener('submit', (e) => {
         e.preventDefault();
-       
-        const currentLang = document.documentElement.getAttribute('lang') || 'en';
-        localStorage.setItem('lang', currentLang);
         window.location.href = 'index.html'; 
     });
 </script>
