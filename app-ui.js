@@ -14,6 +14,7 @@ import {
   getPriorityLabel
 } from "./app-data.js";
 
+
 // DOM refs
 const tasksListEl = document.getElementById("tasksList");
 const completedListEl = document.getElementById("completedList");
@@ -36,8 +37,8 @@ const langEnBtn = document.getElementById("lang-en");
 const langArBtn = document.getElementById("lang-ar");
 
 let currentFilter = "all";
-
 let currentLang = localStorage.getItem("lang") || "en";
+
 
 // ========= Translations =========
 const translations = {
@@ -131,6 +132,7 @@ const translations = {
   }
 };
 
+
 function applyTranslations() {
   const dict = translations[currentLang];
 
@@ -156,6 +158,7 @@ function applyTranslations() {
   if (themeText) themeText.textContent = isDark ? dict.themeLight : dict.themeDark;
 }
 
+
 function setLanguage(lang) {
   currentLang = lang;
   localStorage.setItem("lang", lang);
@@ -164,12 +167,12 @@ function setLanguage(lang) {
   renderCompleted();
 }
 
-
 document.addEventListener("DOMContentLoaded", () => {
   applyTranslations();
   renderTasks();
   renderCompleted();
 });
+
 
 // ========= Toast & Theme =========
 export function showToast(key) {
@@ -210,6 +213,7 @@ if (clearCompletedBtn) {
   };
 }
 
+
 // ========= Modal helpers =========
 export function openModal() {
   modalBackdropEl.classList.add("show");
@@ -219,16 +223,24 @@ export function closeModal() {
 }
 
 function deleteTask(id) {
+  const dict = translations[currentLang];
+  const ok =
+    currentLang === "ar"
+      ? confirm("هل أنت متأكد/ة من حذف هذه المهمة؟")
+      : confirm("Are you sure you want to delete this task?");
+  if (!ok) return;
   const index = tasks.findIndex((t) => t.id === id);
   if (index !== -1) tasks.splice(index, 1);
   saveData();
   renderTasks();
 }
 
+
 // ========= Render Functions =========
 export function renderTasks() {
   if (!tasksListEl) return;
   tasksListEl.innerHTML = "";
+
   const searchTerm = searchInput ? searchInput.value.toLowerCase() : "";
   let filtered = tasks.filter((t) => !t.completed);
 
@@ -244,10 +256,11 @@ export function renderTasks() {
     filtered = filtered.filter((t) => t.priority === "high");
   }
 
-  if (searchTerm)
+  if (searchTerm) {
     filtered = filtered.filter((t) =>
       t.title.toLowerCase().includes(searchTerm)
     );
+  }
 
   const dict = translations[currentLang];
   if (tasksCountEl) tasksCountEl.textContent = `${filtered.length} ${dict.tasksCountSuffix}`;
@@ -255,35 +268,65 @@ export function renderTasks() {
   filtered.forEach((task) => {
     const taskEl = document.createElement("div");
     taskEl.className = "task";
-    if (isOverdue(task)) taskEl.classList.add("overdue");
 
     taskEl.innerHTML = `
       <div class="task-main">
         <div class="task-title">${task.title}</div>
         <div class="task-meta">
           <span class="badge ${getCategoryBadge(task.category)}">${
-            task.category === "work" ? dict.catWork : task.category === "home" ? dict.catHome : dict.catPersonal
+            task.category === "work"
+              ? dict.catWork
+              : task.category === "home"
+              ? dict.catHome
+              : dict.catPersonal
           }</span>
-          <span class="badge ${getPriorityBadge(task.priority)}">${dict.labelPriority}: ${
-            task.priority === "high" ? dict.prioHigh : task.priority === "medium" ? dict.prioMedium : dict.prioLow
-          }</span>
-          <span class="task-time">⏰ <span>${formatTime(task.due)} - ${formatDate(task.due)}</span></span>
-          ${isOverdue(task) ? `<span style="color: var(--danger); font-size: .8rem;">${dict.modalMissedTitle}</span>` : ""}
+          <span class="badge ${getPriorityBadge(task.priority)}">
+            ${dict.labelPriority}: ${
+              task.priority === "high"
+                ? dict.prioHigh
+                : task.priority === "medium"
+                ? dict.prioMedium
+                : dict.prioLow
+            }
+          </span>
+          <span class="task-time">
+            📅 <span>${formatDate(task.due)}</span>
+          </span>
         </div>
       </div>
       <div class="task-actions">
-        <button class="btn-mini btn-complete">${isOverdue(task) ? dict.btnMissed : dict.btnComplete}</button>
+        <button class="btn-mini btn-complete">${dict.btnComplete}</button>
+        <button class="btn-mini btn-missed">${dict.btnMissed}</button>
         <button class="btn-mini btn-edit">${dict.btnEdit}</button>
         <button class="btn-mini btn-delete">${dict.btnDelete}</button>
       </div>
     `;
 
-    taskEl.querySelector(".btn-complete").onclick = () => openCompleteModal(task.id, isOverdue(task) ? "missed" : "complete");
-    taskEl.querySelector(".btn-edit").onclick = () => openEditModal(task.id);
-    taskEl.querySelector(".btn-delete").onclick = () => deleteTask(task.id);
+    const completeBtn = taskEl.querySelector(".btn-complete");
+    const missedBtn = taskEl.querySelector(".btn-missed");
+    const editBtn = taskEl.querySelector(".btn-edit");
+    const deleteBtn = taskEl.querySelector(".btn-delete");
+
+    completeBtn.onclick = () => openCompleteModal(task.id, "complete");
+    missedBtn.onclick = () => openCompleteModal(task.id, "missed");
+    editBtn.onclick = () => openEditModal(task.id);
+    deleteBtn.onclick = () => deleteTask(task.id);
+
     tasksListEl.appendChild(taskEl);
   });
+
+  if (!filtered.length) {
+    const empty = document.createElement("div");
+    empty.style.fontSize = "0.85rem";
+    empty.style.color = "var(--text-soft)";
+    empty.textContent =
+      currentLang === "ar"
+        ? "لا توجد مهام في هذه القائمة."
+        : "No tasks in this list.";
+    tasksListEl.appendChild(empty);
+  }
 }
+
 
 export function renderCompleted() {
   if (!completedListEl) return;
@@ -295,14 +338,28 @@ export function renderCompleted() {
       <div class="completed-header">
         <div>
           <div class="completed-title">${t.title}</div>
-          <div class="completed-note">${t.note || (t.missed ? "No reason added." : "No note added.")}</div>
+          <div class="completed-note">${
+            t.note || (t.missed ? "No reason added." : "No note added.")
+          }</div>
         </div>
         <div class="completed-icon">${t.missed ? "😔" : "🎉"}</div>
       </div>
     `;
     completedListEl.appendChild(el);
   });
+
+  if (!completedTasks.length) {
+    const empty = document.createElement("div");
+    empty.style.fontSize = "0.85rem";
+    empty.style.color = "var(--text-soft)";
+    empty.textContent =
+      currentLang === "ar"
+        ? "لا توجد مهام مكتملة حتى الآن."
+        : "No completed tasks yet.";
+    completedListEl.appendChild(empty);
+  }
 }
+
 
 // ========= Modals Functions =========
 export function openAddModal() {
@@ -322,7 +379,8 @@ export function openAddModal() {
       <option value="medium" selected>${dict.prioMedium}</option>
       <option value="low">${dict.prioLow}</option>
     </select>
-    <label>${dict.labelDue}</label><input type="datetime-local" id="addDue" />
+    <label>${dict.labelDue}</label>
+    <input type="date" id="addDue" />
   `;
   modalFooterEl.innerHTML = `
     <button class="btn-sm btn-outline" id="cancelAddBtn">${dict.btnCancel}</button>
@@ -333,11 +391,26 @@ export function openAddModal() {
     const title = document.getElementById("addTitle").value.trim();
     const due = document.getElementById("addDue").value;
     if (!title || !due) return;
-    tasks.unshift({ id: Date.now(), title, category: document.getElementById("addCategory").value, priority: document.getElementById("addPriority").value, due: new Date(due), completed: false });
-    saveData(); renderTasks(); closeModal(); showToast("toastAdd");
+    tasks.unshift({
+      id: Date.now(),
+      title,
+      category: document.getElementById("addCategory").value,
+      priority: document.getElementById("addPriority").value,
+      due: new Date(due),
+      completed: false
+    });
+    saveData();
+    renderTasks();
+    closeModal();
+    showToast("toastAdd");
   };
   openModal();
+  setTimeout(() => {
+    const input = document.getElementById("addTitle");
+    if (input) input.focus();
+  }, 0);
 }
+
 
 export function openEditModal(id) {
   const task = tasks.find((t) => t.id === id);
@@ -345,7 +418,8 @@ export function openEditModal(id) {
   const dict = translations[currentLang];
   modalTitleEl.textContent = dict.modalEditTitle;
   modalBodyEl.innerHTML = `
-    <label>${dict.labelTitle}</label><input id="editTitle" value="${task.title}" />
+    <label>${dict.labelTitle}</label>
+    <input id="editTitle" value="${task.title}" />
     <label>${dict.labelCategory}</label>
     <select id="editCategory">
       <option value="work" ${task.category === "work" ? "selected" : ""}>${dict.catWork}</option>
@@ -358,7 +432,8 @@ export function openEditModal(id) {
       <option value="medium" ${task.priority === "medium" ? "selected" : ""}>${dict.prioMedium}</option>
       <option value="low" ${task.priority === "low" ? "selected" : ""}>${dict.prioLow}</option>
     </select>
-    <label>${dict.labelDue}</label><input type="datetime-local" id="editDue" value="${toLocalInputValue(task.due)}" />
+    <label>${dict.labelDue}</label>
+    <input type="date" id="editDue" value="${toLocalInputValue(task.due).slice(0,10)}" />
   `;
   modalFooterEl.innerHTML = `
     <button class="btn-sm btn-outline" id="cancelEditBtn">${dict.btnCancel}</button>
@@ -367,37 +442,63 @@ export function openEditModal(id) {
   document.getElementById("cancelEditBtn").onclick = closeModal;
   document.getElementById("saveEdit").onclick = () => {
     const newTitle = document.getElementById("editTitle").value.trim();
-    const newDue = new Date(document.getElementById("editDue").value);
-    if (!newTitle || !newDue) return;
-    task.title = newTitle; task.category = document.getElementById("editCategory").value; task.priority = document.getElementById("editPriority").value; task.due = newDue;
-    saveData(); renderTasks(); closeModal(); showToast("toastUpdate");
+    const newDueValue = document.getElementById("editDue").value;
+    if (!newTitle || !newDueValue) return;
+    const newDue = new Date(newDueValue);
+    task.title = newTitle;
+    task.category = document.getElementById("editCategory").value;
+    task.priority = document.getElementById("editPriority").value;
+    task.due = newDue;
+    saveData();
+    renderTasks();
+    closeModal();
+    showToast("toastUpdate");
   };
   openModal();
+  setTimeout(() => {
+    const input = document.getElementById("editTitle");
+    if (input) input.focus();
+  }, 0);
 }
+
 
 export function openCompleteModal(id, mode) {
   const task = tasks.find((t) => t.id === id);
   if (!task) return;
   const dict = translations[currentLang];
-  modalTitleEl.textContent = mode === "complete" ? dict.modalCompleteTitle : dict.modalMissedTitle;
-  modalBodyEl.innerHTML = `<label>${dict.labelNote}</label><textarea id="note"></textarea>`;
+  modalTitleEl.textContent =
+    mode === "complete" ? dict.modalCompleteTitle : dict.modalMissedTitle;
+  modalBodyEl.innerHTML = `
+    <label>${dict.labelNote}</label>
+    <textarea id="note"></textarea>
+  `;
   modalFooterEl.innerHTML = `
     <button class="btn-sm btn-outline" id="cancelCompleteBtn">${dict.btnCancel}</button>
     <button class="btn-sm btn-fill" id="saveComplete">${dict.btnSave}</button>
   `;
   document.getElementById("cancelCompleteBtn").onclick = closeModal;
   document.getElementById("saveComplete").onclick = () => {
-    completedTasks.unshift({ title: task.title, note: document.getElementById("note").value.trim(), missed: mode === "missed" });
+    completedTasks.unshift({
+      title: task.title,
+      note: document.getElementById("note").value.trim(),
+      missed: mode === "missed"
+    });
     const index = tasks.findIndex((t) => t.id === id);
     if (index !== -1) tasks.splice(index, 1);
-    saveData(); renderTasks(); renderCompleted(); closeModal(); showToast(mode === "complete" ? "toastComplete" : "toastMissed");
+    saveData();
+    renderTasks();
+    renderCompleted();
+    closeModal();
+    showToast(mode === "complete" ? "toastComplete" : "toastMissed");
   };
   openModal();
 }
+
 
 export function setFilter(filter) {
   currentFilter = filter;
   renderTasks();
 }
+
 
 export { addTaskBtn, searchInput, closeModalBtn };
