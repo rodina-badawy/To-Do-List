@@ -339,22 +339,10 @@
         const btn = document.getElementById('btnLogin');
         btn.disabled = true;
         try {
-            alert('1) Sending request...');
-            const res = await fetch('http://localhost:8000/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                body: JSON.stringify({ email, password })
-            });
-            alert('2) Got response: ' + res.status);
-            const data = await res.json();
-            alert('3) Data: ' + JSON.stringify(data));
-            if (data.token) {
-                localStorage.setItem('token', data.token);
-                alert('4) Token saved, redirecting...');
-                window.location.href = 'index.html';
-            }
+            await login(email, password);
+            window.location.href = 'index.html';
         } catch (err) {
-            alert('ERROR: ' + err.name + ': ' + err.message);
+            alert(err.message);
         } finally {
             btn.disabled = false;
         }

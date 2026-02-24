@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" href="https://fav.farm/✔️" />
+  <title>TO-DO LIST</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+
+</head>
+<body>
+  <div class="app">
+
+    <div class="toast" id="toast">
+      <span class="toast-icon">✅</span>
+      <span id="toast-message" data-i18n="toastSuccess">Task completed successfully!</span>
+    </div>
+
+    <header class="app-header">
+      <div class="greeting">
+        <h1 data-i18n="welcome">Welcome 👋</h1>
+        <p data-i18n="subtitle">Let’s organize your day and build new achievements.</p>
+        <div class="mood-badge">
+          <span class="mood-dot"></span>
+          <span data-i18n="moodText">You can do it step by step</span>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <div class="lang-toggle">
+          <button id="lang-en" data-lang="en">EN</button>
+          <span>|</span>
+          <button id="lang-ar" data-lang="ar">AR</button>
+        </div>
+
+        <div class="theme-toggle" id="themeToggle">
+          <span id="themeText">Dark Mode</span>
+          <div class="toggle">
+            <div class="toggle-thumb">🌙</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="toolbar">
+      <button class="btn btn-primary" id="addTaskBtn" data-i18n="addTask">+ Add Task</button>
+
+      <button class="btn btn-chip" data-filter="all" data-i18n="filterAll">All</button>
+      <button class="btn btn-chip" data-filter="today" data-i18n="filterToday">Today</button>
+      <button class="btn btn-chip" data-filter="high" data-i18n="filterHigh">High Priority</button>
+
+      <div class="search">
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="Search for a task..."
+          data-i18n-placeholder="searchPlaceholder"
+        />
+        <span class="search-icon">🔍</span>
+      </div>
+    </div>
+
+    <div class="layout">
+
+      <section class="card">
+        <div class="card-header">
+          <h2 data-i18n="todayTasks">Today Tasks</h2>
+          <small id="tasksCount">
+            <span data-i18n="tasksCountSuffix">Tasks</span>
+          </small>
+        </div>
+        <div class="tasks-list" id="tasksList"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+          <h2 data-i18n="completedTitle">Completed / Missed</h2>
+          <button id="clearCompletedBtn" class="btn btn-chip" style="font-size:0.75rem;" data-i18n="clearCompleted">
+            Clear
+          </button>
+        </div>
+        <div class="completed-list" id="completedList">
+          </div>
+      </section>
+
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modalTitle">Edit Task</h3>
+        <button class="btn-sm btn-outline" id="closeModalBtn">✕</button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-footer" id="modalFooter"></div>
+    </div>
+  </div>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>
